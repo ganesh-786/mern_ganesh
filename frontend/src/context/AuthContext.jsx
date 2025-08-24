@@ -7,24 +7,38 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Optionally, check for existing session
-    // axios.get('/auth/me').then(res => setUser(res.data)).catch(() => setUser(null));
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const [, payloadBase64] = token.split(".");
+        const payloadJson = atob(payloadBase64);
+        const payload = JSON.parse(payloadJson);
+        setUser({ id: payload.id, role: payload.role, name: payload.username || "" });
+      } catch {
+        localStorage.removeItem("token");
+        setUser(null);
+      }
+    }
   }, []);
 
-  const login = async (email, password) => {
-    const res = await axios.post("/login", { email, password });
-    setUser(res.data.user);
+  const login = async (username, password) => {
+    const res = await axios.post("/login", { username, password });
+    const { token } = res.data;
+    localStorage.setItem("token", token);
+    const [, payloadBase64] = token.split(".");
+    const payload = JSON.parse(atob(payloadBase64));
+    setUser({ id: payload.id, role: payload.role, name: username });
     return res.data;
   };
 
-  const register = async (data) => {
-    const res = await axios.post("/register", data);
-    setUser(res.data.user);
-    return res.data;
+  const register = async ({ username, password, role }) => {
+    await axios.post("/", { username, password, role });
+    // Auto-login not provided by backend; require explicit login after register
+    return { message: "Registered successfully" };
   };
 
-  const logout = async () => {
-    await axios.post("/logout");
+  const logout = () => {
+    localStorage.removeItem("token");
     setUser(null);
   };
 
