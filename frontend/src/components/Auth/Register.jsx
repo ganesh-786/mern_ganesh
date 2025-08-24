@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const { register } = useContext(AuthContext);
-  const [form, setForm] = useState({ email: "", password: "", name: "" });
+  const [form, setForm] = useState({ username: "", password: "", role: "user" });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) =>
@@ -14,10 +15,13 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await register(form);
-      navigate("/dashboard");
+      const res = await register(form);
+      setSuccess(res.message || "Registered successfully");
+      setError("");
+      navigate("/login");
     } catch (err) {
       setError("Registration failed");
+      setSuccess("");
     }
   };
 
@@ -25,18 +29,11 @@ export default function Register() {
     <form onSubmit={handleSubmit}>
       <h2>Register</h2>
       {error && <div style={{ color: "red" }}>{error}</div>}
+      {success && <div style={{ color: "green" }}>{success}</div>}
       <input
-        name="name"
-        placeholder="Name"
-        value={form.name}
-        onChange={handleChange}
-        required
-      />
-      <input
-        name="email"
-        type="email"
-        placeholder="Email"
-        value={form.email}
+        name="username"
+        placeholder="Username"
+        value={form.username}
         onChange={handleChange}
         required
       />
@@ -48,6 +45,11 @@ export default function Register() {
         onChange={handleChange}
         required
       />
+      <select name="role" value={form.role} onChange={handleChange}>
+        <option value="user">User</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
       <button type="submit">Register</button>
     </form>
   );

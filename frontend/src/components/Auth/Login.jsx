@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -12,10 +12,11 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(name, password);
+      await login(username, password);
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid credentials");
+      const message = err?.response?.data?.message || "Invalid credentials";
+      setError(message);
     }
   };
 
@@ -25,9 +26,9 @@ export default function Login() {
       {error && <div style={{ color: "red" }}>{error}</div>}
       <input
         type="text"
-        placeholder="username"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
         required
       />
       <input
